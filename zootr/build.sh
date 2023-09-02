@@ -9,4 +9,5 @@ if [ -d "zootr-source" ]; then
 fi
 
 git clone --quiet --progress --branch "${REF}" --single-branch --depth 1 "${REPO}" zootr-source
+rm -rf ./zootr-source/.git
 docker build -t "zootr:${REF}" .

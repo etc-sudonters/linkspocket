@@ -58,8 +58,7 @@ TMPOUT=$(mktemp -d -p /var/tmp/linkspocket/)
 CONTID=$(docker create \
     -v "${REALROM}:/etc/zootr/${ROMNAME}:ro" \
     "zootr:${VERSION}" \
-    -r "/etc/zootr/${ROMNAME}" \
-    $@ )
+    -r "/etc/zootr/${ROMNAME}" -- "${@}" )
 
 set +e
 echo "Launching container ${CONTID}"

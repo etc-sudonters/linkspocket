@@ -8,7 +8,9 @@ usage() {
 ROMDEST="/usr/lib/zootr/ZOOTDEC.z64"
 ROM=$ROMDEST
 
-while getopts "r:" o; do
+echo "Args ${@}"
+
+while getopts ":r:" o; do
     case "${o}" in
         r)
             ROM=${OPTARG}
@@ -17,6 +19,8 @@ while getopts "r:" o; do
 done
 
 shift $((OPTIND-1))
+
+echo "Remaining args ${@}"
 
 if [ ! -f "${ROM}" ]; then 
     echo "${ROM} does not exist!" 1>&2
@@ -40,4 +44,4 @@ if [ "${ROM}" != "${ROMDEST}" ]; then
     fi 
 fi
 
-exec python3 /usr/lib/zootr/OoTRandomizer.py $@ --output_settings
+exec python3 /usr/lib/zootr/OoTRandomizer.py "${@}" --output_settings
