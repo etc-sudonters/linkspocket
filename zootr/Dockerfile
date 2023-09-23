@@ -3,7 +3,7 @@ ARG REF
 
 COPY ./zootr-source/ /usr/lib/zootr
 COPY ./zootr-source/bin/Decompress/Decompress /usr/bin/decompress
-COPY --chmod=777 entrypoint.sh /usr/bin/entrypoint
+COPY --from="base" --chmod=777 entrypoint.sh /usr/bin/entrypoint
 
 ENTRYPOINT ["/usr/bin/entrypoint"]
 CMD ["-h"]
