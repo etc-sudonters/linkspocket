@@ -38,18 +38,22 @@ class Descriptor:
     digest: Digest
     bytes: int
     content_type: str
+    content: io.BufferedIOBase
     annotations: T.Dict[str, str] = dc.field(default_factory=dict)
 
     @staticmethod
-    def empty(content_type: str) -> "Descriptor":
+    def empty(content_type: T.Optional[str] = None) -> "Descriptor":
+        if content_type is None:
+            content_type = "application/vnd.oci.empty.v1+json"
+
         return Descriptor(
             Digest.from_hex(
                 "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
             ),
             2,
             content_type,
+            io.BytesIO(b"{}"),
         )
-
 
 @dc.dataclass
 class DigestStream(io.RawIOBase):
@@ -77,7 +81,7 @@ def from_str(s: str, content_type: str) -> Descriptor:
 def from_bytes(b: bytes, content_type: str) -> Descriptor:
     h = hashlib.sha256()
     h.update(b)
-    return Descriptor(Digest(h.name, h.digest()), len(b), content_type)
+    return Descriptor(Digest(h.name, h.digest()), len(b), content_type, io.BytesIO(b))
 
 
 def from_stream(s: io.BufferedReader, content_type: str) -> Descriptor:
@@ -85,8 +89,5 @@ def from_stream(s: io.BufferedReader, content_type: str) -> Descriptor:
     sizer = streams.Sizer()
     tee = streams.Tee(digester, sizer)
     shutil.copyfileobj(s, tee)
-    return Descriptor(digester.digest(), sizer.written, content_type)
-
-
-def from_hex(hex: str, size: int, media_type: str) -> Descriptor:
-    return Descriptor(Digest("sha256", bytes.fromhex(hex)), size, media_type)
+    s.seek(0, 0)
+    return Descriptor(digester.digest(), sizer.written, content_type, s)

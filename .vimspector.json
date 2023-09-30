@@ -11,8 +11,8 @@
         "python.pythonPath": "/usr/bin/env python3",
         "module": "linkspocket",
         "args": [
-          "-r",
-          "~/zootr/rom.z64"
+            "-d",
+            "~/zootr/seeds/mirror-shield-fairy-ocarina-heart-container-boomerang-bottled-milk"
         ]
       }
     }
