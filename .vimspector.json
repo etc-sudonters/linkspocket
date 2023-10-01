@@ -12,7 +12,12 @@
         "module": "linkspocket",
         "args": [
             "-d",
-            "~/zootr/seeds/mirror-shield-fairy-ocarina-heart-container-boomerang-bottled-milk"
+            "~/zootr/seeds/mirror-shield-fairy-ocarina-heart-container-boomerang-bottled-milk",
+            "-t",
+            "test",
+            "--ref",
+            "localhost:5000/zootr:test",
+            "-Q"
         ]
       }
     }

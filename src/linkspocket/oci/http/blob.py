@@ -1,5 +1,5 @@
 from ...httplib import url
-import io
+from ... import streams
 import urllib.request as urlreq
 import urllib.parse as urlparse
 import http.client as http
@@ -17,7 +17,7 @@ class BlobPusher(blob.BlobPusher):
         self._registry = registry
     
 
-    def push_blob(self, repository: str, descriptor: descriptor.Descriptor, content: io.BufferedIOBase) -> None:
+    def push_blob(self, repository: str, descriptor: descriptor.Descriptor, content: streams.Reader) -> None:
         req = urlreq.Request(f"http://{self._registry}/v2/{repository}/blobs/uploads/", method="POST")
 
         with self._opener.open(req) as rh:
@@ -28,7 +28,7 @@ class BlobPusher(blob.BlobPusher):
         self._finalize_upload(location, descriptor)
 
 
-    def _chunked_upload(self, location: str, descriptor: descriptor.Descriptor, content: io.BufferedIOBase) -> str:
+    def _chunked_upload(self, location: str, descriptor: descriptor.Descriptor, content: streams.Reader) -> str:
         offset = 0
 
         while offset < descriptor.bytes:

@@ -4,20 +4,6 @@ import pathlib
 
 def parser() -> argparse.ArgumentParser:
     cli = argparse.ArgumentParser("linkspocket")
-    cli.add_argument("-t", "--tag", help="name for generated seed", dest="tag", required=True)
-    cli.add_argument(
-        "-R",
-        "--registry",
-        help="URI of repository to push artifacts to, should not include a protocol",
-        default="127.0.0.1:5000",
-        dest="registry",
-    )
-    cli.add_argument(
-        "--repository",
-        help="Name of OCI repository to push to",
-        default="zootr",
-        dest="repository",
-    )
     cli.add_argument(
         "-d",
         "--seed-dir",
@@ -25,5 +11,19 @@ def parser() -> argparse.ArgumentParser:
         required=True,
         type=pathlib.Path,
         dest="dir",
+    )
+    cli.add_argument(
+        "-R",
+        "--ref",
+        dest="ref",
+        required=True,
+    )
+    cli.add_argument(
+        "-Q",
+        "--stfu",
+        help="For real, shut the fuck up",
+        default=False,
+        dest="stfu",
+        action="store_true",
     )
     return cli

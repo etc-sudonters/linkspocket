@@ -4,21 +4,29 @@
 # bytes and content-type.
 
 import io
-
-from . import descriptor
 import typing as T
+
+from ... import streams
+from . import descriptor
 
 
 class BlobPusher(T.Protocol):
-    def push_blob(self, repository: str, descriptor: descriptor.Descriptor, content: io.BufferedIOBase) -> None:
+    def push_blob(
+        self,
+        repository: str,
+        descriptor: descriptor.Descriptor,
+        content: streams.Reader,
+    ) -> None:
         ...
 
+
 class BlobPuller(T.Protocol):
-    def pull_blob(self, repository: str, digest: descriptor.Digest) -> io.BufferedReader:
+    def pull_blob(self, repository: str, digest: descriptor.Digest) -> streams.Reader:
         ...
 
     def does_blob_exist(self, repository: str, digest: descriptor.Digest) -> bool:
         ...
 
+
 class BlobPushPuller(BlobPusher, BlobPuller, T.Protocol):
-    ... 
+    ...

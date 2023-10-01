@@ -1,9 +1,3 @@
-# scan directory, it'll look like:
-# OoT_71B24_YV8FB7K8A2_Cosmetics.json
-# OoT_71B24_YV8FB7K8A2_Settings.json
-# OoT_71B24_YV8FB7K8A2_Spoiler.json
-# OoT_71B24_YV8FB7K8A2.z64
-
 import dataclasses as dc
 import enum
 import io
@@ -15,7 +9,6 @@ import typing as T
 _file_re = re.compile(
     r"OoT_(?P<setting>[A-Z0-9]{5})_(?P<seed>[A-Z0-9]+)_?(?P<world>W\d+)?_?(?P<kind>\w+)?"
 )
-
 
 class FileKind(enum.Enum):
     Cosmetic = enum.auto()
@@ -41,6 +34,7 @@ class ZootrFile(os.PathLike):
 
     def __fspath__(self) -> str:
         return self.path.__fspath__()
+
 
 def scan_directory(d: pathlib.Path) -> T.Iterable[ZootrFile]:
     for candidate in d.glob("OoT_*"):

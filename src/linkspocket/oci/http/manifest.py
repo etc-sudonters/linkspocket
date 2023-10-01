@@ -1,9 +1,8 @@
 import dataclasses as dc
 import json
 import urllib.request as urlreq
-import io
 
-from ... import serialize
+from .. import json as ocijson
 from ..core import manifest
 
 
@@ -15,7 +14,7 @@ class ManifestPusher(manifest.ManifestPusher):
     def push_manifest(
         self, repository: str, reference: str, m: manifest.Manifest
     ) -> None:
-        serialized = json.dumps(m, cls=serialize.OciEncoder, indent=4)
+        serialized = json.dumps(m, cls=ocijson.OciEncoder, indent=4)
         encoded_manifest = serialized.encode()
 
         req = urlreq.Request(

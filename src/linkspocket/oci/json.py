@@ -1,7 +1,6 @@
 import json 
-from .oci.core import descriptor, manifest
 import typing as T
-
+from .core import descriptor, manifest
 
 class OciEncoder(json.JSONEncoder):
     def default(self, obj: object) -> T.Any:
@@ -23,5 +22,7 @@ class OciEncoder(json.JSONEncoder):
                 "config": obj.config,
                 "layers": [d for d in obj.layers],
             }
+            if obj.annotations:
+                m["annotations"] = obj.annotations.copy()
             return m
         super().default(obj)
