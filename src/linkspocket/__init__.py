@@ -102,14 +102,14 @@ def _track(s: streams.NamedReader, n: float, w: T.TextIO) -> progress.Reader:
                 ]
             ),
             progress.Static(f"{C.reset()} "),
-            progress.Bar(f"{C.fg(129)}={C.reset()}", " ", n),
+            progress.Bar(filled=f"{C.fg(129)}={C.reset()}", unfilled=" ", total=n),
             progress.Static(" "),
             progress.Percentage(n),
             progress.Static(f" {s.name()}"),
         ]
     )
 
-    r = progress.MinTick(r, n, n * 0.032)
-    r = progress.OnFinalTick(r, n, f"{C.resetline()} {C.fg(156)}●{C.reset()} {s.name()}" + "\n")
+    r = progress.MinTick(r=r, total=n, min_tick=n * 0.032)
+    r = progress.OnFinalTick(r=r, total=n, display=f"{C.resetline()} {C.fg(156)}●{C.reset()} {s.name()}" + "\n")
 
     return progress.Reader(s, progress.Display(r, w))

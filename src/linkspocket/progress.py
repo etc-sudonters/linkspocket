@@ -2,13 +2,13 @@ import dataclasses as dc
 import io
 import typing as T
 
-from . import console as C
 from . import streams
 
 
-def bar(progress: float, total: float, filled: str, unfilled: str) -> str:
+def bar(
+    progress: float, total: float, filled: str, unfilled: str, scale: int = 100
+) -> str:
     """forestall + trafuri"""
-    scale = 50
     percent = int(scale * progress / total)
     return (filled * percent) + (unfilled * (scale - percent))
 
@@ -19,24 +19,29 @@ class Render(T.Protocol):
 
 
 @dc.dataclass()
-class Bar(Render):
-    filled: str
-    unfilled: str
-    length: float
-    progress: float = dc.field(init=False, default=0)
+class _progress(Render):
+    total: float
+    progress: float = dc.field(init=False, default=0.0)
 
     def tick(self, n: float) -> str:
         self.progress += n
-        return bar(self.progress, self.length, self.filled, self.unfilled)
+        return ""
 
 
 @dc.dataclass()
-class Percentage(Render):
-    total: float
-    progress: float = dc.field(init=False, default=0)
+class Bar(_progress):
+    filled: str
+    unfilled: str
 
     def tick(self, n: float) -> str:
-        self.progress += n
+        super().tick(n)
+        return bar(self.progress, self.total, self.filled, self.unfilled)
+
+
+@dc.dataclass()
+class Percentage(_progress):
+    def tick(self, n: float) -> str:
+        super().tick(n)
         percent = (self.progress / self.total) * 100
         return f"{percent:>6.2f}%"
 
@@ -73,17 +78,15 @@ class Many(Render):
 
 
 @dc.dataclass()
-class MinTick(Render):
+class MinTick(_progress):
     r: Render
-    total: float
     min_tick: float
-    progress: float = dc.field(init=False, default=0)
     ticks: float = dc.field(init=False, default=0)
     has_ticked: bool = dc.field(init=False, default=False)
 
     def tick(self, n: float) -> str:
+        super().tick(n)
         self.ticks += n
-        self.progress += n
         should_tick = (
             not self.has_ticked
             or self.ticks >= self.min_tick
@@ -98,28 +101,25 @@ class MinTick(Render):
 
         return ""
 
+
 @dc.dataclass()
-class OnFinalTick(Render):
+class OnFinalTick(_progress):
     r: Render
-    total: float
     display: str
-    progress: float = dc.field(init=False, default=0)
 
     def tick(self, n: float) -> str:
-        self.progress += n
+        super().tick(n)
 
         if self.progress >= self.total:
             return self.display
 
         return self.r.tick(n)
 
-@dc.dataclass()
-class NewLineAtFinal(Render):
-    total: float
-    progress: float = dc.field(init=False, default=0)
 
+@dc.dataclass()
+class NewLineAtFinal(_progress):
     def tick(self, n: float) -> str:
-        self.progress += n
+        super().tick(n)
 
         if (self.progress / self.total) >= 1:
             return "\n"
