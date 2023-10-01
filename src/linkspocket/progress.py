@@ -117,16 +117,6 @@ class OnFinalTick(_progress):
 
 
 @dc.dataclass()
-class NewLineAtFinal(_progress):
-    def tick(self, n: float) -> str:
-        super().tick(n)
-
-        if (self.progress / self.total) >= 1:
-            return "\n"
-        return ""
-
-
-@dc.dataclass()
 class Display:
     r: Render
     w: T.TextIO
