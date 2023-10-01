@@ -1,6 +1,7 @@
 import dataclasses as dc
 import typing as T
 
+
 class Named(T.Protocol):
     def name(self) -> str:
         ...
@@ -17,11 +18,8 @@ class Seeker(T.Protocol):
     def seek(self, n: int, origin: int):
         ...
 
-class SeekReader(Seeker, Reader, T.Protocol):
-    ...
-
-class NamedReader(Named, Reader, Seeker, T.Protocol):
-    ...
+SeekReader = type("SeekReader", (Seeker, Reader), {})
+NamedReader = type("NamedReader", (Named, Seeker, Reader), {})
 
 @dc.dataclass()
 class TeeWriter(Writer):

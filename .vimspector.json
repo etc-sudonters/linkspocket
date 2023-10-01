@@ -13,10 +13,8 @@
         "args": [
             "-d",
             "~/zootr/seeds/mirror-shield-fairy-ocarina-heart-container-boomerang-bottled-milk",
-            "-t",
-            "test",
             "--ref",
-            "localhost:5000/zootr:test",
+            "127.0.0.1:5000/zootr:test",
             "-Q"
         ]
       }
