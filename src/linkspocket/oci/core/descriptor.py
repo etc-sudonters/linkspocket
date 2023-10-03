@@ -29,6 +29,10 @@ class Digest:
     def from_hex(hex: str) -> "Digest":
         return Digest("sha256", bytes.fromhex(hex))
 
+    @staticmethod
+    def from_str(s: str) -> "Digest":
+        return Digest.from_hex(s[s.index(":") + 1 :])
+
 
 @dc.dataclass
 class Descriptor:
@@ -128,4 +132,14 @@ def from_obj(
         **kw,
     )
 
-    return from_str(c,name, content_type)
+    return from_str(c, name, content_type)
+
+
+def load_from(d: T.Dict[str, T.Any]) -> Descriptor:
+    return Descriptor(
+        Digest.from_str(d["digest"]),
+        bytes=d["size"],
+        content_type=d["mediaType"],
+        content=None,
+        annotations=d.get("annotations", {}),
+    )

@@ -1,6 +1,5 @@
 import dataclasses as dc
 import typing as T
-from ... import streams
 
 from . import descriptor
 
@@ -26,16 +25,31 @@ class Manifest:
         yield self.config
         yield from self.layers
 
-class ManifestPusher(T.Protocol):
+class Pusher(T.Protocol):
     def push_manifest(self, repository: str, reference: str, manifest: Manifest) -> None:
         ...
 
-class ManifestPuller(T.Protocol):
-    def pull_manifest(self, repository: str, reference: str) -> T.Optional[streams.Reader]:
+class Puller(T.Protocol):
+    def pull_manifest(self, repository: str, reference: str) -> T.Optional[Manifest]:
         ...
 
     def does_manifest_exist(self, repository: str, reference: str) -> bool:
         ...
 
-class ManifestPushPuller(ManifestPusher, ManifestPuller, T.Protocol):
-    ...
+
+@dc.dataclass()
+class PullPusher(Puller, Pusher):
+    _pull: Puller
+    _push: Pusher
+
+    def pull_manifest(self, repository: str, reference: str) -> T.Optional[Manifest]:
+        return self._pull.pull_manifest(repository, reference)
+
+    def does_manifest_exist(self, repository: str, reference: str) -> bool:
+        return self._pull.does_manifest_exist(repository, reference)
+
+    def push_manifest(self, repository: str, reference: str, manifest: Manifest) -> None:
+        if self.does_manifest_exist(repository, reference):
+            return
+
+        return self._push.push_manifest(repository, reference, manifest)

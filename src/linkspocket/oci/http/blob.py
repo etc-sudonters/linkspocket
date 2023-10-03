@@ -1,21 +1,22 @@
+from os import stat
 from ...httplib import url
 from ... import streams
 import urllib.request as urlreq
 import urllib.parse as urlparse
 import http.client as http
 import typing as T
+import dataclasses as dc
 
 
 from ..core import blob, descriptor
 
 
-class BlobPusher(blob.BlobPusher):
-    _MIN_CHUNK_SIZE = 1024 * 64
+@dc.dataclass()
+class BlobPusher(blob.Pusher):
+    _registry: str
+    _opener: urlreq.OpenerDirector
 
-    def __init__(self, registry: str, opener: urlreq.OpenerDirector) -> None:
-        self._opener = opener
-        self._registry = registry
-    
+    _MIN_CHUNK_SIZE = 1024 * 64
 
     def push_blob(self, repository: str, descriptor: descriptor.Descriptor, content: streams.Reader) -> None:
         req = urlreq.Request(f"http://{self._registry}/v2/{repository}/blobs/uploads/", method="POST")
@@ -64,3 +65,18 @@ class BlobPusher(blob.BlobPusher):
 
         with self._opener.open(req):
             pass
+
+@dc.dataclass()
+class BlobPuller(blob.Puller):
+    _registry: str
+    _opener: urlreq.OpenerDirector
+
+    def does_blob_exist(self, repository: str, digest: descriptor.Digest) -> bool:
+        req = urlreq.Request(f"http://{self._registry}/v2/{repository}/blobs/{digest}")
+
+        with self._opener.open(req) as rh:
+            resp = T.cast(http.HTTPResponse, rh)
+            return resp.status == 200
+
+    def pull_blob(self, repository: str, digest: descriptor.Digest) -> streams.Reader:
+        return super().pull_blob(repository, digest)

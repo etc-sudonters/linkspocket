@@ -8,7 +8,7 @@ from . import console as C
 from . import progress, streams
 from .httplib import handlers
 from .oci import http as ocihttp
-from .oci.core import descriptor, manifest, reference
+from .oci.core import blob, descriptor, manifest, reference
 from .zootrlib import artifacts, seeddetails
 
 _BASE_MEDIA_TYPE = "application/sudonters.zootr.seed"
@@ -43,8 +43,17 @@ def main(args: argparse.Namespace) -> int:
     m = _zootr_manifest_from_dir(args.dir)
 
     opener = opener_from_cli(args)
-    blobs = ocihttp.BlobPusher(ref.registry, opener)
     manifests = ocihttp.ManifestPusher(ref.registry, opener)
+
+    blobs = blob.PullPusher(
+        ocihttp.BlobPuller(ref.registry, opener),
+        ocihttp.BlobPusher(ref.registry, opener),
+    )
+
+    manifests = manifest.PullPusher(
+        ocihttp.ManifestPuller(ref.registry, opener),
+        ocihttp.ManifestPusher(ref.registry, opener),
+    )
 
     for b in m.blobs():
         content = _track(b.content, b.bytes, sys.stdout) if not args.stfu else b.content
@@ -110,6 +119,10 @@ def _track(s: streams.NamedReader, n: float, w: T.TextIO) -> progress.Reader:
     )
 
     r = progress.MinTick(r=r, total=n, min_tick=n * 0.032)
-    r = progress.OnFinalTick(r=r, total=n, display=f"{C.resetline()} {C.fg(156)}●{C.reset()} {s.name()}" + "\n")
+    r = progress.OnFinalTick(
+        r=r,
+        total=n,
+        display=f"{C.resetline()} {C.fg(156)}●{C.reset()} {s.name()}" + "\n",
+    )
 
     return progress.Reader(s, progress.Display(r, w))

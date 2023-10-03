@@ -3,14 +3,14 @@
 # Blobs are referenced by Descriptors, which carry the blob's digest, size in
 # bytes and content-type.
 
-import io
+import dataclasses as dc
 import typing as T
 
 from ... import streams
 from . import descriptor
 
 
-class BlobPusher(T.Protocol):
+class Pusher(T.Protocol):
     def push_blob(
         self,
         repository: str,
@@ -20,7 +20,7 @@ class BlobPusher(T.Protocol):
         ...
 
 
-class BlobPuller(T.Protocol):
+class Puller(T.Protocol):
     def pull_blob(self, repository: str, digest: descriptor.Digest) -> streams.Reader:
         ...
 
@@ -28,5 +28,19 @@ class BlobPuller(T.Protocol):
         ...
 
 
-class BlobPushPuller(BlobPusher, BlobPuller, T.Protocol):
-    ...
+@dc.dataclass()
+class PullPusher(Puller, Pusher):
+    _pull: Puller
+    _push: Pusher
+
+    def push_blob(self, repository: str, descriptor: descriptor.Descriptor, content: streams.Reader) -> None:
+        if self.does_blob_exist(repository, descriptor.digest):
+            return
+
+        return self._push.push_blob(repository, descriptor, content)
+
+    def does_blob_exist(self, repository: str, digest: descriptor.Digest) -> bool:
+        return self._pull.does_blob_exist(repository, digest)
+
+    def pull_blob(self, repository: str, digest: descriptor.Digest) -> streams.Reader:
+        return self._pull.pull_blob(repository, digest)
