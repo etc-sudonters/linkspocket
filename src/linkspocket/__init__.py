@@ -1,8 +1,11 @@
 import argparse
+import json
 import pathlib
 import sys
 import typing as T
 import urllib.request
+
+from linkspocket.zootrlib.manifest import ZootrManifest, zootr_manifest_from_dir
 
 from . import console as C
 from . import progress, streams
@@ -40,10 +43,10 @@ def main(args: argparse.Namespace) -> int:
         print(f"{args.ref} is not a valid OCI reference")
         return 4
 
-    m = _zootr_manifest_from_dir(args.dir)
+    zm = zootr_manifest_from_dir(args.dir)
+    m = _oci_manifest_from_zootr(zm)
 
     opener = opener_from_cli(args)
-    manifests = ocihttp.ManifestPusher(ref.registry, opener)
 
     blobs = blob.PullPusher(
         ocihttp.BlobPuller(ref.registry, opener),
@@ -55,22 +58,40 @@ def main(args: argparse.Namespace) -> int:
         ocihttp.ManifestPusher(ref.registry, opener),
     )
 
-    for b in m.blobs():
-        content = _track(b.content, b.bytes, sys.stdout) if not args.stfu else b.content
-        blobs.push_blob(ref.repository, b, content)
+    s = streams.string_reader(
+        json.dumps(zm.metadata, cls=seeddetails.SeedDetailsEncoder)
+    )
+
+    if not args.stfu:
+        s = _track(streams.name("Metadata", s), m.config.bytes, sys.stdout)
+
+    blobs.push_blob(
+        ref.repository,
+        m.config,
+        s,
+    )
+
+    for (zf, b) in zip(zm.files, m.layers):
+        s = zf.open()
+
+        if not args.stfu:
+            s = _track(streams.name(zf.kind.name, s), b.bytes, sys.stdout)
+
+        blobs.push_blob(ref.repository, b, s)
 
     manifests.push_manifest(ref.repository, ref.tag, m)
 
     return 0
 
 
-def _zootr_manifest_from_dir(p: pathlib.Path) -> manifest.Manifest:
+def _oci_manifest_from_zootr(zm: ZootrManifest) -> manifest.Manifest:
     layers = []
-    config = descriptor.Descriptor.empty()
+    config = descriptor.from_obj(
+        zm.metadata, _media_type("config"), cls=seeddetails.SeedDetailsEncoder
+    )
     annotations = {}
 
-    for zf in artifacts.scan_directory(p):
-
+    for zf in zm.files:
         fh = zf.open()
         d = descriptor.from_stream(
             streams.name(zf.kind.name, T.cast(streams.SeekReader, fh)),
@@ -79,20 +100,6 @@ def _zootr_manifest_from_dir(p: pathlib.Path) -> manifest.Manifest:
         d.annotations["org.opencontainers.image.title"] = zf.path.name
         layers.append(d)
 
-        if zf.kind == artifacts.FileKind.Settings:
-            details = seeddetails.from_stream(fh)
-            fh.seek(0, 0)
-            config = descriptor.from_obj(
-                details, "Metadata", _media_type("config"), cls=seeddetails.Encoder
-            )
-            annotations.update(
-                {
-                    _anno_key("version"): details.version,
-                    _anno_key("seed"): details.seed,
-                    _anno_key("settings"): details.settings,
-                    _anno_key("spoilerlog"): str(details.spoiler),
-                }
-            )
     return manifest.Manifest(_media_type("generation"), config, layers, annotations)
 
 
@@ -124,5 +131,4 @@ def _track(s: streams.NamedReader, n: float, w: T.TextIO) -> progress.Reader:
         total=n,
         display=f"{C.resetline()} {C.fg(156)}●{C.reset()} {s.name()}" + "\n",
     )
-
     return progress.Reader(s, progress.Display(r, w))

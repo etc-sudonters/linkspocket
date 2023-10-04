@@ -1,4 +1,5 @@
 import dataclasses as dc
+import io
 import typing as T
 
 
@@ -43,14 +44,6 @@ class Sizer(Writer):
         return len(b)
 
 @dc.dataclass()
-class ReadTicker(Reader):
-    _tick: T.Callable[[int], None]
-
-    def read(self, length: int = 0) -> bytes:
-        self._tick(length)
-        return b''
-
-@dc.dataclass()
 class TeeReader(Reader):
     _1: Reader
     _2: Reader
@@ -63,7 +56,7 @@ class TeeReader(Reader):
 @dc.dataclass()
 class _namedreader(NamedReader):
     n: str
-    r: SeekReader
+    r: Reader
 
     def name(self) -> str:
         return self.n
@@ -71,8 +64,10 @@ class _namedreader(NamedReader):
     def read(self, s: int = 0) -> bytes:
         return self.r.read(s)
 
-    def seek(self, n: int, origin: int) -> None:
-        return self.r.seek(n, origin)
 
-def name(n: str, r: SeekReader) -> NamedReader:
+def name(n: str, r: Reader) -> NamedReader:
     return _namedreader(n, r)
+
+def string_reader(s: str) -> Reader:
+    b = io.BytesIO(s.encode())
+    return b

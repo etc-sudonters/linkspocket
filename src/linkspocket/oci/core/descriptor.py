@@ -1,6 +1,5 @@
 import dataclasses as dc
 import hashlib
-import io
 import json as _json
 import shutil
 import typing as T
@@ -43,7 +42,6 @@ class Descriptor:
     digest: Digest
     bytes: int
     content_type: str
-    content: streams.NamedReader
     annotations: T.Dict[str, str] = dc.field(default_factory=dict)
 
     @staticmethod
@@ -57,7 +55,6 @@ class Descriptor:
             ),
             2,
             content_type,
-            streams.name("<empty>", T.cast(streams.SeekReader, io.BytesIO(b"{}"))),
         )
 
 
@@ -77,18 +74,17 @@ class DigestStream(streams.Writer):
         return Digest(self.algo.name, self.algo.digest())
 
 
-def from_str(s: str, name: str, content_type: str) -> Descriptor:
-    return from_bytes(s.encode(), name, content_type)
+def from_str(s: str, content_type: str) -> Descriptor:
+    return from_bytes(s.encode(), content_type)
 
 
-def from_bytes(b: bytes, name: str, content_type: str) -> Descriptor:
+def from_bytes(b: bytes, content_type: str) -> Descriptor:
     h = hashlib.sha256()
     h.update(b)
     return Descriptor(
         Digest(h.name, h.digest()),
         len(b),
         content_type,
-        streams.name(name, T.cast(streams.SeekReader, io.BytesIO(b))),
     )
 
 
@@ -97,13 +93,11 @@ def from_stream(s: streams.NamedReader, content_type: str) -> Descriptor:
     sizer = streams.Sizer()
     tee = streams.TeeWriter(digester, sizer)
     shutil.copyfileobj(s, tee)
-    s.seek(0, 0)
-    return Descriptor(digester.digest(), sizer.written, content_type, s)
+    return Descriptor(digester.digest(), sizer.written, content_type)
 
 
 def from_obj(
     obj: T.Any,
-    name: str,
     content_type: str,
     *,
     skipkeys=False,
@@ -132,14 +126,12 @@ def from_obj(
         **kw,
     )
 
-    return from_str(c, name, content_type)
-
+    return from_str(c, content_type)
 
 def load_from(d: T.Dict[str, T.Any]) -> Descriptor:
     return Descriptor(
         Digest.from_str(d["digest"]),
         bytes=d["size"],
         content_type=d["mediaType"],
-        content=None,
         annotations=d.get("annotations", {}),
     )

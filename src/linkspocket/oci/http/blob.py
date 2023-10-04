@@ -1,4 +1,3 @@
-from os import stat
 from ...httplib import url
 from ... import streams
 import urllib.request as urlreq

@@ -12,7 +12,7 @@ class SeedDetails:
     settings: str
     spoiler: bool
 
-class Encoder(json.JSONEncoder):
+class SeedDetailsEncoder(json.JSONEncoder):
     def default(self, o: T.Any) -> T.Any:
         if isinstance(o, SeedDetails):
             return {
@@ -26,11 +26,11 @@ class Encoder(json.JSONEncoder):
         return super().default(o)
 
 
-def from_stream(s: io.BufferedIOBase) -> SeedDetails:
-    return from_dict(json.load(s))
+def seeddetails_from_stream(s: io.BufferedIOBase) -> SeedDetails:
+    return seeddetails_from_dict(json.load(s))
 
 
-def from_dict(settings: T.Dict[str, T.Any]) -> SeedDetails:
+def seeddetails_from_dict(settings: T.Dict[str, T.Any]) -> SeedDetails:
     return SeedDetails(
         version=settings[":version"],
         hash=settings["file_hash"],

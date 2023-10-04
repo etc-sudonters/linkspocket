@@ -36,7 +36,7 @@ class ZootrFile(os.PathLike):
         return self.path.__fspath__()
 
 
-def scan_directory(d: pathlib.Path) -> T.Iterable[ZootrFile]:
+def zootr_files_from_dir(d: pathlib.Path) -> T.Iterable[ZootrFile]:
     for candidate in d.glob("OoT_*"):
         if candidate.is_dir():
             continue
