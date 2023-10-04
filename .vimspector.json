@@ -1,0 +1,23 @@
+{
+  "$schema": "https://puremourning.github.io/vimspector/schema/vimspector.schema.json",
+  "configurations": {
+    "main": {
+      "adapter": "debugpy",
+      "configuration": {
+        "name": "run the executable",
+        "cwd": "${workspaceRoot}/src",
+        "type": "python",
+        "request": "launch",
+        "python.pythonPath": "/usr/bin/env python3",
+        "module": "linkspocket",
+        "args": [
+            "-d",
+            "~/zootr/seeds/mirror-shield-fairy-ocarina-heart-container-boomerang-bottled-milk",
+            "--ref",
+            "127.0.0.1:5000/zootr:test",
+            "-Q"
+        ]
+      }
+    }
+  }
+}
