@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ex
+set -e
 SCRIPT_DIR=$( cd -- "$( dirname -- $(realpath "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
 REPO="git@github.com:OoTRandomizer/OoT-Randomizer.git"
 REF="${ZOOTR_REF:-'v7.1.0'}"

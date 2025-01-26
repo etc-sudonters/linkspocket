@@ -1,5 +1,5 @@
 import dataclasses as dc
-import io
+from .. import streams
 import json
 import typing as T
 
@@ -12,21 +12,22 @@ class SeedDetails:
     settings: str
     spoiler: bool
 
+
 class SeedDetailsEncoder(json.JSONEncoder):
     def default(self, o: T.Any) -> T.Any:
         if isinstance(o, SeedDetails):
             return {
-                    "version": o.version,
-                    "hash": o.hash,
-                    "seed": o.seed,
-                    "settings": o.settings,
-                    "spoiler": o.spoiler,
-                    }
+                "version": o.version,
+                "hash": o.hash,
+                "seed": o.seed,
+                "settings": o.settings,
+                "spoiler": o.spoiler,
+            }
 
         return super().default(o)
 
 
-def seeddetails_from_stream(s: io.BufferedIOBase) -> SeedDetails:
+def seeddetails_from_stream(s: streams.Reader) -> SeedDetails:
     return seeddetails_from_dict(json.load(s))
 
 

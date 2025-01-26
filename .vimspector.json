@@ -1,23 +1,45 @@
 {
-  "$schema": "https://puremourning.github.io/vimspector/schema/vimspector.schema.json",
-  "configurations": {
-    "main": {
-      "adapter": "debugpy",
-      "configuration": {
-        "name": "run the executable",
-        "cwd": "${workspaceRoot}/src",
-        "type": "python",
-        "request": "launch",
-        "python.pythonPath": "/usr/bin/env python3",
-        "module": "linkspocket",
-        "args": [
-            "-d",
-            "~/zootr/seeds/mirror-shield-fairy-ocarina-heart-container-boomerang-bottled-milk",
-            "--ref",
-            "127.0.0.1:5000/zootr:test",
-            "-Q"
-        ]
-      }
+    "$schema": "https://puremourning.github.io/vimspector/schema/vimspector.schema.json",
+    "configurations": {
+        "pull": {
+            "adapter": "debugpy",
+            "configuration": {
+                "name": "run the executable",
+                "cwd": "${workspaceRoot}/src",
+                "type": "python",
+                "request": "launch",
+                "python.pythonPath": "/usr/bin/env python3",
+                "module": "linkspocket",
+                "args": [
+                    "-R",
+                    "registry.sdntrs.quest/zootr-seeds:gold-scale-frog-bottled-milk-fairy-ocarina-slingshot",
+                    "-Q",
+                    "pull",
+                    "-o",
+                    "/mnt/anr/newlondo/source/linkspocket/.pulled/",
+                    "-C"
+                ]
+            }
+        },
+        "push": {
+            "adapter": "debugpy",
+            "configuration": {
+                "name": "run the executable",
+                "cwd": "${workspaceRoot}/src",
+                "type": "python",
+                "request": "launch",
+                "python.pythonPath": "/usr/bin/env python3",
+                "module": "linkspocket",
+                "args": [
+                    "-R",
+                    "registry.sdntrs.quest/zootr-seeds",
+                    "-Q",
+                    "push",
+                    "-A",
+                    "-d",
+                    "/mnt/anr/newlondo/source/linkspocket/.seeds/hover-boots-saw-map-frog-bottled-milk"
+                ]
+            }
+        }
     }
-  }
 }

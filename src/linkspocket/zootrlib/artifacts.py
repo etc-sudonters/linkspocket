@@ -1,6 +1,6 @@
+import io
 import dataclasses as dc
 import enum
-import io
 import os
 import pathlib
 import re
@@ -9,6 +9,7 @@ import typing as T
 _file_re = re.compile(
     r"OoT_(?P<setting>[A-Z0-9]{5})_(?P<seed>[A-Z0-9]+)_?(?P<world>W\d+)?_?(?P<kind>\w+)?"
 )
+
 
 class FileKind(enum.Enum):
     Cosmetic = enum.auto()

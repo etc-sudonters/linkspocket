@@ -215,3 +215,4 @@ zootr/zootr-source
 *.z64
 *.zpf
 .artifacts
+.pulled

@@ -1,6 +1,7 @@
 import dataclasses as dc
 import io
 import typing as T
+from . import console as C
 
 from . import streams
 
@@ -51,7 +52,7 @@ class Spinner(Render):
     states: T.Sequence[str]
     ticks: int = dc.field(init=False, default=0)
 
-    def tick(self, _) -> str:
+    def tick(self, n) -> str:
         self.ticks += 1
         return self.states[self.ticks % len(self.states)]
 
@@ -60,7 +61,7 @@ class Spinner(Render):
 class Static(Render):
     s: str
 
-    def tick(self, _) -> str:
+    def tick(self, n) -> str:
         return self.s
 
 
@@ -127,22 +128,64 @@ class Display:
 
 
 @dc.dataclass()
-class Reader(streams.Reader):
-    r: streams.Reader
+class Reader(streams.NamedReader):
+    r: streams.NamedReader
     d: Display
 
-    def read(self, length: int = 0) -> bytes:
-        r = self.r.read(length)
+    def read(self, s: int = 0) -> bytes:
+        r = self.r.read(s)
         self.d.tick(float(len(r)))
         return r
 
+    def name(self) -> str:
+        return self.r.name()
+
 
 @dc.dataclass()
-class Writer(streams.Writer):
-    w: streams.Writer
+class Writer(streams.NamedWriter):
+    w: streams.NamedWriter
     d: Display
 
-    def write(self, b: bytes) -> int:
-        n = self.w.write(b)
+    def write(self, s: T.Optional[bytes]) -> int:
+        n = self.w.write(s)
         self.d.tick(float(n))
         return n
+
+    def name(self) -> str:
+        return self.w.name()
+
+
+def track(s: streams.NamedReader, n: float, w: T.TextIO) -> Reader:
+    return Reader(s, Display(ticker(s.name(), n), w))
+
+
+def ticker(name: str, n: float):
+    r = Many(
+        [
+            Static(f"{C.resetline()} "),
+            Spinner(
+                [
+                    f"{C.fg(70)}◌{C.reset()}",
+                    f"{C.fg(76)}◎{C.reset()}",
+                    f"{C.fg(82)}◍{C.reset()}",
+                    f"{C.fg(156)}●{C.reset()}",
+                    f"{C.fg(82)}◍{C.reset()}",
+                    f"{C.fg(76)}◎{C.reset()}",
+                ]
+            ),
+            Static(f"{C.reset()} "),
+            Bar(filled=f"{C.fg(129)}={C.reset()}",
+                unfilled=" ", total=n),
+            Static(" "),
+            Percentage(n),
+            Static(f" {name}"),
+        ]
+    )
+
+    r = MinTick(r=r, total=n, min_tick=n * 0.032)
+    r = OnFinalTick(
+        r=r,
+        total=n,
+        display=f"{C.resetline()} {C.fg(156)}●{C.reset()} {name}" + "\n",
+    )
+    return r

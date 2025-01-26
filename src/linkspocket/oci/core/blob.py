@@ -21,7 +21,7 @@ class Pusher(T.Protocol):
 
 
 class Puller(T.Protocol):
-    def pull_blob(self, repository: str, digest: descriptor.Digest) -> streams.Reader:
+    def pull_blob(self, repository: str, digest: descriptor.Digest) -> streams.MustCloseReader:
         ...
 
     def does_blob_exist(self, repository: str, digest: descriptor.Digest) -> bool:
@@ -42,5 +42,5 @@ class PullPusher(Puller, Pusher):
     def does_blob_exist(self, repository: str, digest: descriptor.Digest) -> bool:
         return self._pull.does_blob_exist(repository, digest)
 
-    def pull_blob(self, repository: str, digest: descriptor.Digest) -> streams.Reader:
+    def pull_blob(self, repository: str, digest: descriptor.Digest) -> streams.MustCloseReader:
         return self._pull.pull_blob(repository, digest)
