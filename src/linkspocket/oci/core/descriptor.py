@@ -28,9 +28,12 @@ class Digest:
     def from_hex(hex: str) -> "Digest":
         return Digest("sha256", bytes.fromhex(hex))
 
+    def hexhash(self) -> str:
+        return self.hash.hex()
+
     @staticmethod
     def from_str(s: str) -> "Digest":
-        return Digest.from_hex(s[s.index(":") + 1 :])
+        return Digest.from_hex(s[s.index(":") + 1:])
 
 
 @dc.dataclass
@@ -127,6 +130,7 @@ def from_obj(
     )
 
     return from_str(c, content_type)
+
 
 def load_from(d: T.Dict[str, T.Any]) -> Descriptor:
     return Descriptor(

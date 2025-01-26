@@ -7,12 +7,23 @@ import typing as T
 class Reference:
     registry: str
     repository: str
-    tag: str = "latest"
+    tag: T.Optional[str]
     digest: T.Optional[str] = None
 
     @staticmethod
     def _unsafe_blank() -> "Reference":
-        return Reference("", "")
+        return Reference("", "", None)
+
+    def __str__(self) -> str:
+        str = f"{self.registry}/{self.repository}"
+
+        if self.tag:
+            str = f"{str}:{self.tag}"
+
+        if self.digest:
+            str = f"{str}@{self.digest}"
+
+        return str
 
 
 # https://github.com/oras-project/oras-py/blob/07272eafbd06fe325ecdfd4b9db76efc210fe96c/oras/container.py#L11
@@ -42,6 +53,6 @@ def parse(s: str) -> T.Optional[Reference]:
 
     ref.registry = items.get("registry", "localhost:5000")
     ref.repository = repo
-    ref.tag = items.get("tag", "latest")
+    ref.tag = items.get("tag")
     ref.digest = items.get("digest")
     return ref
