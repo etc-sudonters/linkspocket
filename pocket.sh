@@ -3,7 +3,7 @@ set -e
 SCRIPT_DIR=$( cd -- "$( dirname -- $(realpath "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
 ROM=""
 OUT=""
-VERSION="v7.1.0"
+VERSION="v8.2"
 TAG=""
 
 usage() {
@@ -16,7 +16,7 @@ Usage $0 -r <path to oot rom> -o <directory to put output into>
     -r Path to rom, may be absolute or relative to current directory
     -t Output files are placed in a directory with this name
        By default a tag is derived from the generated settings file
-    -v Version of the randomizer to generate with, default is 'v7.1.0'
+    -v Version of the randomizer to generate with, default is 'v8.2'
        If the version is not present, this script will attempt to build it first
        May be any 'commit-ish' (as defined by git) present in the OOTR repository
 

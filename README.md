@@ -17,7 +17,7 @@ Usage linkspocket -r <path to oot rom> -o <directory to put output into>
     -r Path to rom, may be absolute or relative to current directory
     -t Output files are placed in a directory with this name
        By default a tag is derived from the generated settings file
-    -v Version of the randomizer to generate with, default is 'v7.1.0'
+    -v Version of the randomizer to generate with, default is 'v8.2'
        If the version is not present, this script will attempt to build it first
        May be any 'commit-ish' (as defined by git) present in the OOTR repository
 
@@ -38,21 +38,72 @@ Pairs well with...
 
 ```
 python3 -m linkspocket -h
-usage: linkspocket [-h] -d DIR -R REF [-Q]
+usage: linkspocket [-h] -R REF [--http PROTO] [-Q] {push,pull} ...
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -d DIR, --seed-dir DIR
-                        Path to directory containing zootr artifacts
-  -R REF, --ref REF
-  -Q, --stfu            For real, shut the fuck up
+positional arguments:
+  {push,pull}
+    push             Push a generated seed to the registry
+    pull             Pull a generated seed from the registry
+
+options:
+  -h, --help         show this help message and exit
+  -R REF, --ref REF  OCI reference, e.g myregistry.tld:5000/namespace:tag
+  --http PROTO       Use plaintext HTTP instead of HTTPS to converse with registry
+  -Q, --stfu         Don't output to console
 ```
 
 This packages an output directory with at least a settings file in it into an
 OCI artifact and push it to to where ever `--ref` specifies. No dependencies,
 just run it -- well assuming you have an OCI registry available.
 
+
+
+### Pushing
+
+```
+python3 -m linkspocket push -h
+usage: linkspocket push [-h] -d SRC [-A]
+
+Push a generated seed to the registry
+
+options:
+  -h, --help            show this help message and exit
+  -d SRC, --seed-dir SRC
+                        Path to directory containing zootr artifacts
+  -A, --autotag         Automatically generate tag from seed hash, cedes to explicit tag in --ref
+
+```
+
+Example:
+
+```bash
+# tag manifest based on seed hash
+python3 -m linkspocket -R my-oci-registry/zootr-seeds push -A -d ${SEEDHOME}/big-magic-beans-skull-token-saw-longshot/
+# explicitly tag manifest
+python3 -m linkspocket -R my-oci-registry/zootr-seeds:the-explicit-tag push -d ${SEEDHOME}/big-magic-beans-skull-token-saw-longshot/
+```
+
+### Pulling
+
+```
+python3 -m linkspocket pull -h
+usage: linkspocket pull [-h] -o OUT [-C]
+
+Pull a generated seed from the registry
+
+options:
+  -h, --help            show this help message and exit
+  -o OUT, --output OUT  Output directory
+  -C, --clean           Ensure output directory is empty before pulling
+```
+
+Example:
+
+```bash
+python3 -m linkspocket -R my-oci-registry/zootr-seeds:the-explicit-tag pull -C --out ../.artifacts/pulled
+```
+
 TODO:
-- [ ] Probably don't hardcode http
+- [x] Probably don't hardcode http
 - [ ] Registry auth :sob:
 - [ ] View stored seeds

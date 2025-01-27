@@ -16,7 +16,7 @@
                     "-Q",
                     "pull",
                     "-o",
-                    "/mnt/anr/newlondo/source/linkspocket/.pulled/",
+                    "/mnt/anr/newlondo/source/linkspocket/.artifacts/pulled/",
                     "-C"
                 ]
             }
@@ -34,10 +34,11 @@
                     "-R",
                     "registry.sdntrs.quest/zootr-seeds",
                     "-Q",
+                    "-H",
                     "push",
                     "-A",
                     "-d",
-                    "/mnt/anr/newlondo/source/linkspocket/.seeds/hover-boots-saw-map-frog-bottled-milk"
+                    "/mnt/anr/newlondo/source/linkspocket/.artifacts/big-magic-beans-skull-token-saw-longshot/"
                 ]
             }
         }

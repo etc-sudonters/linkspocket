@@ -53,7 +53,11 @@ class BlobPusher(blob.Pusher):
 
             with self._opener.open(req) as rh:
                 resp = T.cast(http.HTTPResponse, rh)
-                location = T.cast(str, resp.getheader("location"))
+                builder = url.Builder(urlparse.urlparse(
+                    T.cast(str, resp.getheader("location"))))
+                builder.host = self._registry
+                builder.scheme = self._proto
+                location = str(builder)
 
             offset += len(chunk)
 
@@ -61,6 +65,8 @@ class BlobPusher(blob.Pusher):
 
     def _finalize_upload(self, location: str, descriptor: descriptor.Descriptor) -> None:
         builder = url.Builder(urlparse.urlparse(location))
+        builder.host = self._registry
+        builder.scheme = self._proto
         builder.query["digest"] = [str(descriptor.digest)]
         req = urlreq.Request(str(builder), method="PUT")
 

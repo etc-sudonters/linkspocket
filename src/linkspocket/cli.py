@@ -19,7 +19,13 @@ def parser() -> argparse.ArgumentParser:
     )
 
     cli.add_argument(
-        "--http", help="Use plaintext HTTP instead of HTTPS to converse with registry", dest="proto", default="https")
+        "-H",
+        "--http",
+        help="Use plaintext HTTP instead of HTTPS to converse with registry",
+        dest="insecure_http",
+        default=False,
+        action="store_true",
+    )
 
     cli.add_argument(
         "-Q",

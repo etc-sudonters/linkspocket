@@ -37,7 +37,7 @@ class UnknownCommand(PocketError):
         super().__init__("Subcommand must be 'pull' or 'push'")
 
 
-def registry(registry: str, proto: str = "https") -> Registry:
+def registry(registry: str, proto: str) -> Registry:
     opener = urllib.request.build_opener(handlers.DontThrowExceptions())
     blobs = blob.PullPusher(
         ocihttp.BlobPuller(registry, opener, proto),
@@ -59,11 +59,13 @@ def createargs(args: argparse.Namespace, std: C.Std) -> Args | None:
     if (ref := reference.parse(args.ref)) is None:
         raise BadReference(args.ref)
 
+    proto = "https" if not args.insecure_http else "http"
+
     if hasattr(args, "src"):
         return cli.PushCtx(
             ref=ref,
             quiet=args.quiet,
-            registry=registry(ref.registry),
+            registry=registry(ref.registry, proto),
             std=std,
             src=args.src,
             autotag=args.autotag,
@@ -72,7 +74,7 @@ def createargs(args: argparse.Namespace, std: C.Std) -> Args | None:
         return cli.PullCtx(
             ref=ref,
             quiet=args.quiet,
-            registry=registry(ref.registry),
+            registry=registry(ref.registry, proto),
             std=std,
             out=args.out,
             clean=args.clean,
